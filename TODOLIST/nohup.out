@@ -1,0 +1,21 @@
+[uWSGI] getting INI configuration from uwsgi.ini
+*** Starting uWSGI 2.0.15 (64bit) on [Wed Jul 19 05:20:41 2017] ***
+compiled with version: 4.4.7 20120313 (Red Hat 4.4.7-18) on 18 July 2017 23:48:55
+os: Linux-2.6.32-642.el6.x86_64 #1 SMP Tue May 10 17:27:01 UTC 2016
+nodename: host.localdomain
+machine: x86_64
+clock source: unix
+detected number of CPU cores: 1
+current working directory: /TODOLIST/TODOLIST
+detected binary path: /usr/local/bin/uwsgi
+!!! no internal routing support, rebuild with pcre support !!!
+uWSGI running as root, you can use --uid/--gid/--chroot options
+*** WARNING: you are running uWSGI as root !!! (use the --uid flag) *** 
+chdir() to /TODOLIST
+your processes number limit is 1940
+your memory page size is 4096 bytes
+detected max file descriptor number: 1024
+lock engine: pthread robust mutexes
+thunder lock: disabled (you can enable it with --thunder-lock)
+probably another instance of uWSGI is running on the same address (:8000).
+bind(): Address already in use [core/socket.c line 769]

@@ -1,2 +1,2 @@
-# TodoList
-跟人喜好
+# todolist
+个人喜好

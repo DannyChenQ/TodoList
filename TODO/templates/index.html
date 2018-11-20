@@ -1,0 +1,375 @@
+{% load todotags %}
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ username }}</title>
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+    <script src="/static/js/jquery-3.1.1.min.js"></script>
+    <script src="/static/js/jquery-3.1.1.min.map"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+    <script src="/static/js/bootstrap-editable.min.js"></script>
+    <script src="/static/js/bootstrap-datetimepicker.js"></script>
+    <script src="/static/js/locales/bootstrap-datetimepicker.zh-CN.js"></script>
+    <link rel="stylesheet" href="/static/css/todolist.css">
+    <link rel="stylesheet" href="/static/css/buttons.css">
+    <link rel="stylesheet" href="https://blackrockdigital.github.io/startbootstrap-simple-sidebar/css/simple-sidebar.css">
+    <link rel="stylesheet" href="/static/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/static/css/bootstrap-editable.css">
+    <link href="/static/css/bootstrap-datetimepicker.min.css" rel="stylesheet"/>
+</head>
+<body>
+<nav class="navbar navbar-default navbar-fixed-top" role="navigation" data-toggle='tab'>
+    <div class="container-fluid">
+    <div class="navbar-header">
+        <a class="navbar-brand" href="#">网站首页</a>
+    </div>
+    <ul class="nav navbar-nav navbar-right">
+      <li><a onclick="javascript:window.location.href='/todolist/logout/'"><span class="glyphicon glyphicon-log-out"></span> 退出</a></li>
+    </ul>
+    </div>
+</nav>
+<br>
+<br>
+<br>
+<ul id="myTab" class="nav nav-tabs">
+    <li class="active">
+        <a href="#todolist" data-toggle="tab">
+             TODOLIST
+        </a>
+    </li>
+    <li><a href="#ifeng_news" data-toggle="tab">凤凰新闻</a></li>
+
+    </li>
+</ul>
+<div class="container tab-content" style="width: 1000px;" id="mytabcontent">
+    <div class="tab-pane fade in active" id="todolist">
+    <div>
+        <span style="color: #4cae4c;font-size: 22px">我的待办事项</span>
+    </div>
+    <div class="input-group">
+            <div class="input-group-btn">
+                <button type="button" class="btn btn-default dropdown-toggle" onclick="search()">搜索</button>
+            </div>
+            <input type="text" class="form-control" placeholder="內容搜索" id="search_content" value="{{ request.GET.q }}">
+
+    </div>
+
+    <div class="row">
+        <div class="col-xs-12">
+            <table class="table table-condensed table-hover">
+                <tbody>
+                <tr>
+                    <th class="info">内容</th>
+                    <th class="danger">开始时间</th>
+                    <th class="danger">预计用时</th>
+                    <th class="warning">剩余时间</th>
+                    <th class="success">操作</th>
+
+                </tr>
+                {% for data in result %}
+                    <tr>
+                        <td class="info td_width {% if data.is_complete == '1' %} del_line{% endif %}"><a
+                                onclick="online_edit(this,'{{ data.id }}','{{ data.is_complete }}')">{{ data.content }}</a>
+                            {#                            &nbsp;<span#}
+                            {#                                class="glyphicon glyphicon-exclamation-sign" style="color: red"></span>#}
+                        </td>
+                        <td class="danger">{{ data.add_time }}</td>
+                        <td class="info">{{ data.time_day }} 天 {{ data.time_hours }} 时 {{ data.time_minute }} 分</td>
+                        <td class="warning" style="color: #2b542c">{{ data|computing_time:'' }}
+                            {% if  data|computing_time:'true'  == "2" %}
+                                &nbsp;<span
+                                    class="glyphicon glyphicon-remove" style="color: red"
+                                    data-toggle="tooltip" title="已经过期！"></span>
+                            {% endif %}
+                            {% if  data|computing_time:'true'  == "1" %}
+                                &nbsp;<span
+                                    class="glyphicon glyphicon-exclamation-sign" style="color: red"
+                                    data-toggle="tooltip"
+                                    title="剩余时间不足一小时"></span>
+
+                            {% endif %}
+                            {% if  data|computing_time:'true'  == "3" %}
+                                <span class="badge">已完成</span>
+
+                            {% endif %}
+                        </td>
+                        <td class="success" style="width: 10%">
+                            <span class="glyphicon glyphicon-ok"
+
+                                  {% if data.is_complete == "1" %}style="color:#D87093" {% endif %}
+                                  id="complete"
+                                  {% if data.is_complete == "0" %}onclick="complete('{{ data.id }}')"{% endif %}></span>
+                            <span class="glyphicon glyphicon-plus td_margin-left" id="add_button"
+                                  onclick="show_add()"></span>
+                            <span class="glyphicon glyphicon-repeat td_margin-left " id="refresh_button"
+                                  onclick="refresh()"></span>
+                            <span class="glyphicon glyphicon-trash td_margin-left" id="del_button"
+                                  onclick="show_del('{{ data.id }}')"></span>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <strong style="font-size: 10px;color: red">注：</strong><span style="font-size: 8px">点击内容即可修改。</span>
+            <nav>
+                <ul class="pagination">
+                    {% if result.has_previous %}
+                        <li><a href="?page={{ result.previous_page_number }}&q={{ request.GET.q }}">&laquo;</a></li>
+                    {% endif %}
+                    {% for page in result.paginator.page_range %}
+                        <li {% if page == result.number %}class="active"{% endif %}><a
+                                href="?page={{ page }}&q={{ request.GET.q }}">{{ page }}</a></li>
+                    {% endfor %}
+                    {% if result.has_next %}
+                        <li><a href="?page={{ result.next_page_number }}&q={{ request.GET.q }}">&raquo;</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+            <button class="btn-primary btn btn-toolbar" onclick="show_add()">ADD</button>
+        </div>
+
+    </div>
+     </div>
+     <div class="tab-pane fade in " id="ifeng_news">
+        <table class="table">
+            <caption>即时新闻</caption>
+                <thead>
+                    <tr>
+                        <th>标题</th>
+                        <th>发布时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+            <tbody>
+                {% for d in news %}
+                <tr>
+                    <td>{{d.title}}</td>
+                    <td>{{d.news_time}}</td>
+                    <td><a href="{{d.link}}" target = "_blank">立即查看</a></td>
+
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+     </div>
+</div>
+
+<div class="modal fade " tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel"
+     aria-hidden="true" id="mymodal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                        class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="myModalLabel">Add TODO</h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-inline" role="form">
+                    <div class="form-group">
+                        <div class="input-group col-xs-11">
+                            <div class="input-group-addon">预计用时</div>
+                            <input class="form-control" type="number" min="0" max="24" placeholder="0" id="time_day">
+                            <span class="input-group-addon ">天</span>
+                            <input class="form-control" type="number" min="0" max="60" placeholder="0" id="time_hours">
+                            <span class="input-group-addon ">时</span>
+                            <input class="form-control" type="number" min="0" max="60" placeholder="0" id="time_minute">
+                            <span class="input-group-addon ">分</span>
+
+
+                        </div>
+                    </div>
+
+                </form>
+                <br>
+                <textarea style="width: 100%;height: 70%; resize: vertical" id="content"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="action_add()">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade " tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel"
+     aria-hidden="true" id="modalalert">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                        class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="myModalLabel">操作提示</h4>
+            </div>
+            <div class="modal-body">
+                您确定要删除本条数据吗？
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="loadingModal">
+    <div style="width: 200px;height:20px; z-index: 20000; position: absolute; text-align: center; left: 50%; top: 50%;margin-left:-100px;margin-top:-10px">
+        <div class="progress progress-striped active" style="margin-bottom: 0;">
+            <div class="progress-bar" style="width: 100%;"></div>
+        </div>
+        <h5>正在加载...</h5>
+    </div>
+</div>
+<!-- <script src="http://webapi.amap.com/maps?v=1.3&key=efa23c7712cfff040fa4402435885905"></script> -->
+<!-- <script type="text/javascript" src="http://cache.amap.com/lbs//static/addToolbar.js"></script> -->
+<!-- <div style="width:700px;height:550px;border:#ccc solid 1px;font-size:12px" id="container"></div> -->
+<div id="tip" style="line-height: 24px"></div>
+<script tye="text/javascript">
+/***
+    var map, geolocation;
+    //加载地图，调用浏览器定位服务
+    map = new AMap.Map('container', {
+        resizeEnable: true
+    });
+    map.plugin('AMap.Geolocation', function() {
+        geolocation = new AMap.Geolocation({
+            enableHighAccuracy: false,//是否使用高精度定位，默认:true
+            timeout: 10000,          //超过10秒后停止定位，默认：无穷大
+            buttonOffset: new AMap.Pixel(10, 20),//定位按钮与设置的停靠位置的偏移量，默认：Pixel(10, 20)
+            zoomToAccuracy: true,      //定位成功后调整地图视野范围使定位位置及精度范围视野内可见，默认：false
+            buttonPosition:'RB'
+        });
+        map.addControl(geolocation);
+        geolocation.getCurrentPosition();
+        AMap.event.addListener(geolocation, 'complete', onComplete);//返回定位信息
+        AMap.event.addListener(geolocation, 'error', onError);      //返回定位出错信息
+    });
+    //解析定位结果
+
+    function onComplete(data) {
+        var str=['定位成功'];
+        str.push('经度：' + data.position.getLng());
+        str.push('纬度：' + data.position.getLat());
+        if(data.accuracy){
+             str.push('精度：' + data.accuracy + ' 米');
+        }//如为IP精确定位结果则没有精度信息
+        str.push('是否经过偏移：' + (data.isConverted ? '是' : '否'));
+        // document.getElementById('tip').innerHTML = str.join('<br>');
+    }
+    //解析定位错误信息
+    function onError(data) {
+        document.getElementById('tip').innerHTML = '定位失败';
+    }
+**/
+</script>
+
+<script type="text/javascript">
+    $(function () {
+        $("[data-toggle='tooltip']").tooltip();
+    });
+    function online_edit(obj, id, is_complete) {
+        $(obj).editable({
+            type: "text",
+            disabled: (is_complete == "1") ? true : false,
+            emptytext: "",          //空值的默认文本
+            mode: "inline",              //编辑框的模式：支持popup和inline两种模式，默认是popup
+            validate: function (value) { //字段验证
+                if (!$.trim(value)) {
+                    return '不能为空';
+                } else {
+
+                    update(id, value)
+                }
+            }
+        });
+    }
+    function show_add() {
+        $("#mymodal").modal("show")
+    }
+    function action_add() {
+
+        var content = $("#content").val();
+        var time_day = $("#time_day").val();
+        var time_hours = $("#time_hours").val();
+        var time_minute = $("#time_minute").val();
+        if (content == "") {
+            alert("请填写详细内容");
+            return
+        }
+        console.log(time_day, time_hours, time_day);
+        if (time_day == 0 && time_hours == 0 && time_minute == 0) {
+            alert("请填写使用时间");
+            return
+        }
+        $("#loadingModal").modal("show");
+        var level = "1";
+        var data = {
+            content: content,
+            level: level,
+            is_complete: "0",
+            time_day: time_day,
+            time_hours: time_hours,
+            time_minute: time_minute,
+
+        };
+        console.log(data);
+        var url = "/todolist/add/";
+        $.post(url, data, function (data) {
+            if (data.code == "1") {
+                alert("请填写内容");
+            } else {
+                window.location.reload()
+            }
+        })
+    }
+    function update(id, content) {
+        var data = {
+            id: id,
+            content: content
+        };
+        console.log(data);
+        $("#loadingModal").modal("show");
+        $.post("/todolist/update/", data, function () {
+            if (data.code == "1") {
+                alert(data.msg);
+            } else {
+                window.location.reload();
+            }
+        })
+    }
+    function complete(id) {
+        $("#loadingModal").modal("show");
+        var data = {
+            id: id
+        };
+        $.post("/todolist/complete/", data, function (data) {
+            if (data.code == "1") {
+                alert(data.msg);
+            } else {
+                window.location.reload();
+            }
+        })
+    }
+    function show_del(id) {
+        $("#loadingModal").modal("show");
+        var data = {
+            id: id
+        };
+        $.post("/todolist/delete/", data, function (data) {
+            if (data.code == "1") {
+                alert(data.msg)
+            } else {
+                window.location.reload();
+            }
+        })
+    }
+
+    function refresh() {
+        window.location.reload();
+    }
+    function search() {
+        var search_content = $("#search_content").val();
+        window.location.href = "/todolist/search/?page=1&q=" + search_content
+    }
+</script>
+</body>
+</html>
